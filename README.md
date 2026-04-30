@@ -52,9 +52,25 @@ Release formulae are created from the templates in
 step-by-step instructions, required inputs (version, URL, sha256,
 SBOM/provenance references), and formula test requirements.
 
-No stable release formulae have been published yet.  When a release is cut
-for a model-fabric tool, follow the template process to produce the versioned
-formula and open a PR to this tap.
+No stable release formulae have been published yet.  When a release is cut,
+follow the template process to produce the versioned formula and open a PR
+to this tap.
+
+Available release templates:
+
+| Template | Tool | Notes |
+|---|---|---|
+| `Formula/templates/model-router-release.rb` | model-router | |
+| `Formula/templates/guardrail-fabric-release.rb` | guardrail-fabric | |
+| `Formula/templates/agent-registry-release.rb` | agent-registry | |
+| `Formula/templates/model-governance-ledger-release.rb` | model-governance-ledger | |
+| `Formula/templates/nlboot-client-release.rb` | nlboot-client | Linux-only; dual-arch (x86\_64 + aarch64) |
+
+For `nlboot-client`, trigger the
+[update-nlboot-client](.github/workflows/update-nlboot-client.yml)
+workflow with a published version string.  It downloads the release tarballs,
+computes checksums, generates a versioned formula from the template, and opens
+a PR automatically.
 
 ## Pending formulae
 

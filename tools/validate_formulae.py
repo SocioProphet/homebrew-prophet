@@ -26,9 +26,12 @@ TEMPLATE_REQUIRED = {
     "guardrail-fabric-release.rb": "guardrail-fabric",
     "agent-registry-release.rb": "agent-registry",
     "model-governance-ledger-release.rb": "model-governance-ledger",
+    "nlboot-client-release.rb": "nlboot-client",
 }
 
 # Every placeholder that must appear in each template file.
+# Templates that use non-standard placeholders can override this via
+# TEMPLATE_PLACEHOLDERS; all others use REQUIRED_PLACEHOLDERS.
 REQUIRED_PLACEHOLDERS = [
     "__VERSION__",
     "__URL__",
@@ -36,6 +39,20 @@ REQUIRED_PLACEHOLDERS = [
     "__SBOM_URL__",
     "__SBOM_SHA256__",
 ]
+
+# Per-template placeholder overrides (used instead of REQUIRED_PLACEHOLDERS).
+# nlboot-client ships separate tarballs for x86_64 and aarch64.
+TEMPLATE_PLACEHOLDERS: dict[str, list[str]] = {
+    "nlboot-client-release.rb": [
+        "__VERSION__",
+        "__X86_URL__",
+        "__X86_SHA256__",
+        "__ARM_URL__",
+        "__ARM_SHA256__",
+        "__SBOM_URL__",
+        "__SBOM_SHA256__",
+    ],
+}
 
 FORMULA_TOKENS = ["class ", " desc ", " homepage ", " url ", " version ", " def install", " test do", "end"]
 
@@ -78,7 +95,8 @@ def validate_templates() -> int:
                 return fail(f"templates/{filename}: missing required formula token {needle!r}")
         if binary not in text:
             return fail(f"templates/{filename}: expected binary/name token {binary!r}")
-        for placeholder in REQUIRED_PLACEHOLDERS:
+        placeholders = TEMPLATE_PLACEHOLDERS.get(filename, REQUIRED_PLACEHOLDERS)
+        for placeholder in placeholders:
             if placeholder not in text:
                 return fail(f"templates/{filename}: missing required placeholder {placeholder!r}")
         # Templates must NOT contain real (64-char hex) sha256 values.

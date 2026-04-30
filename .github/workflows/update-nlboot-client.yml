@@ -1,0 +1,82 @@
+name: update-nlboot-client
+
+# Triggered manually when a new nlboot-client release is published.
+# Provide the version (without leading 'v'), download the release tarballs,
+# compute sha256 checksums, generate a versioned release formula from the
+# template, and open a pull request.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "nlboot-client release version, without leading v (e.g. 0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Download artifacts and compute sha256
+        id: hashes
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          BASE="https://github.com/SociOS-Linux/nlboot/releases/download/nlboot-client-v${VERSION}"
+          X86_URL="${BASE}/nlboot-client-nlboot-client-v${VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          ARM_URL="${BASE}/nlboot-client-nlboot-client-v${VERSION}-aarch64-unknown-linux-gnu.tar.gz"
+
+          echo "Fetching x86_64 artifact..."
+          curl -fsSL --retry 3 -o /tmp/nlboot-x86.tar.gz "${X86_URL}"
+          X86_SHA=$(sha256sum /tmp/nlboot-x86.tar.gz | awk '{print $1}')
+
+          echo "Fetching aarch64 artifact..."
+          curl -fsSL --retry 3 -o /tmp/nlboot-arm.tar.gz "${ARM_URL}"
+          ARM_SHA=$(sha256sum /tmp/nlboot-arm.tar.gz | awk '{print $1}')
+
+          echo "x86_sha=${X86_SHA}" >> "$GITHUB_OUTPUT"
+          echo "arm_sha=${ARM_SHA}" >> "$GITHUB_OUTPUT"
+          echo "x86_url=${X86_URL}" >> "$GITHUB_OUTPUT"
+          echo "arm_url=${ARM_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate versioned release formula from template
+        env:
+          VERSION: ${{ inputs.version }}
+          X86_SHA: ${{ steps.hashes.outputs.x86_sha }}
+          ARM_SHA: ${{ steps.hashes.outputs.arm_sha }}
+          X86_URL: ${{ steps.hashes.outputs.x86_url }}
+          ARM_URL: ${{ steps.hashes.outputs.arm_url }}
+        run: |
+          python3 tools/update_nlboot_client.py \
+            "${VERSION}" \
+            "${X86_URL}" "${X86_SHA}" \
+            "${ARM_URL}" "${ARM_SHA}"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          commit-message: "nlboot-client: add release formula for v${{ inputs.version }}"
+          title: "nlboot-client: add release formula for v${{ inputs.version }}"
+          body: |
+            Automated release formula for **nlboot-client v${{ inputs.version }}**.
+
+            Generated `Formula/nlboot-client@${{ inputs.version }}.rb` from
+            `Formula/templates/nlboot-client-release.rb` with real artifact URLs
+            and computed sha256 checksums.
+
+            - x86_64 and aarch64 release artifact URLs populated.
+            - sha256 placeholders replaced with checksums computed from the
+              downloaded tarballs.
+            - Source release: https://github.com/SociOS-Linux/nlboot/releases/tag/nlboot-client-v${{ inputs.version }}
+
+            **Validation:** Run `make validate` (i.e. `python3 tools/validate_formulae.py`) locally to confirm the template passes structural checks.  On a Linux host with Homebrew, `brew audit --strict Formula/nlboot-client@${{ inputs.version }}.rb` provides additional Homebrew-level validation.
+          branch: "release/nlboot-client-v${{ inputs.version }}"
+          base: main
+          labels: "formula-release,nlboot-client"
