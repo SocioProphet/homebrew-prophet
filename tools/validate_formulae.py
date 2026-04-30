@@ -15,6 +15,7 @@ REQUIRED = {
     "guardrail-fabric.rb": "guardrail-fabric",
     "model-governance-ledger.rb": "model-governance-ledger",
     "agent-registry.rb": "agent-registry",
+    "nlboot-client.rb": "nlboot-client",
 }
 
 

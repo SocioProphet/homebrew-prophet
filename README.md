@@ -22,13 +22,27 @@ brew install holmes
 
 `holmes` installs the Holmes language intelligence CLI.
 
+## Linux-only formulae
+
+```bash
+brew install nlboot-client  # Linux only — errors on macOS
+```
+
+`nlboot-client` installs the SourceOS NLBoot signed boot/recovery client.
+It drives kexec-based live and recovery flows and is **Linux-only**.
+The formula uses release artifact tarballs from
+[SociOS-Linux/nlboot](https://github.com/SociOS-Linux/nlboot/releases).
+
+> **Updating sha256 hashes:** trigger the
+> [update-nlboot-client](.github/workflows/update-nlboot-client.yml)
+> workflow with the new version string after a release is published.
+> That workflow downloads the release tarballs, computes checksums, and
+> opens a PR updating the formula automatically.
+
 ## Pending formulae
 
 - `sourceos-devtools`
 - `sourceos-installer`
-- `model-router`
-- `guardrail-fabric`
-- `agent-registry`
 - `nlplab`
 - `embeddinglab`
 - `graphlab`
