@@ -2,7 +2,8 @@ name: update-nlboot-client
 
 # Triggered manually when a new nlboot-client release is published.
 # Provide the version (without leading 'v'), download the release tarballs,
-# compute sha256 checksums, update the formula, and open a pull request.
+# compute sha256 checksums, generate a versioned release formula from the
+# template, and open a pull request.
 
 on:
   workflow_dispatch:
@@ -45,7 +46,7 @@ jobs:
           echo "x86_url=${X86_URL}" >> "$GITHUB_OUTPUT"
           echo "arm_url=${ARM_URL}" >> "$GITHUB_OUTPUT"
 
-      - name: Update formula
+      - name: Generate versioned release formula from template
         env:
           VERSION: ${{ inputs.version }}
           X86_SHA: ${{ steps.hashes.outputs.x86_sha }}
@@ -61,16 +62,21 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          commit-message: "nlboot-client: update to v${{ inputs.version }}"
-          title: "nlboot-client: update to v${{ inputs.version }}"
+          commit-message: "nlboot-client: add release formula for v${{ inputs.version }}"
+          title: "nlboot-client: add release formula for v${{ inputs.version }}"
           body: |
-            Automated formula update for **nlboot-client v${{ inputs.version }}**.
+            Automated release formula for **nlboot-client v${{ inputs.version }}**.
 
-            - Updated x86_64 and aarch64 release artifact URLs.
-            - Replaced sha256 placeholders with computed checksums.
+            Generated `Formula/nlboot-client@${{ inputs.version }}.rb` from
+            `Formula/templates/nlboot-client-release.rb` with real artifact URLs
+            and computed sha256 checksums.
+
+            - x86_64 and aarch64 release artifact URLs populated.
+            - sha256 placeholders replaced with checksums computed from the
+              downloaded tarballs.
             - Source release: https://github.com/SociOS-Linux/nlboot/releases/tag/nlboot-client-v${{ inputs.version }}
 
-            **Validation:** Run `make validate` (i.e. `python3 tools/validate_formulae.py`) locally to confirm the formula passes structural checks.  On a Linux host with Homebrew, `brew audit --strict Formula/nlboot-client.rb` provides additional Homebrew-level validation.
-          branch: "update/nlboot-client-v${{ inputs.version }}"
+            **Validation:** Run `make validate` (i.e. `python3 tools/validate_formulae.py`) locally to confirm the template passes structural checks.  On a Linux host with Homebrew, `brew audit --strict Formula/nlboot-client@${{ inputs.version }}.rb` provides additional Homebrew-level validation.
+          branch: "release/nlboot-client-v${{ inputs.version }}"
           base: main
-          labels: "formula-update,nlboot-client"
+          labels: "formula-release,nlboot-client"
