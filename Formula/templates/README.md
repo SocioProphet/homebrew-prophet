@@ -37,7 +37,7 @@ before publishing the formula.
 | `__VERSION__` | Semantic version string, e.g. `1.2.3` |
 | `__URL__` | Download URL of the release tarball (from GitHub Releases) |
 | `__SHA256__` | SHA-256 checksum of the release tarball |
-| `__SBOM_URL__` | Download URL of the CycloneDX SBOM artifact for this release |
+| `__SBOM_URL__` | Download URL of the SBOM artifact for this release |
 | `__SBOM_SHA256__` | SHA-256 checksum of the SBOM artifact |
 
 `nlboot-client` ships separate binaries for x86\_64 and aarch64 and uses these
@@ -50,7 +50,7 @@ tokens instead of `__URL__` / `__SHA256__`:
 | `__X86_SHA256__` | SHA-256 checksum of the x86\_64 release tarball |
 | `__ARM_URL__` | Download URL of the aarch64 release tarball |
 | `__ARM_SHA256__` | SHA-256 checksum of the aarch64 release tarball |
-| `__SBOM_URL__` | Download URL of the CycloneDX SBOM artifact |
+| `__SBOM_URL__` | Download URL of the SPDX SBOM artifact |
 | `__SBOM_SHA256__` | SHA-256 checksum of the SBOM artifact |
 
 > **Do NOT invent URLs or checksums.**  Obtain them from the official GitHub
@@ -74,7 +74,7 @@ tokens instead of `__URL__` / `__SHA256__`:
    ```
 4. Uncomment the `resource "sbom"` block and fill in `__SBOM_URL__` and
    `__SBOM_SHA256__`.
-5. Verify the provenance attestation out-of-band (e.g. with `cosign verify-blob`).
+5. Verify the provenance attestation out-of-band.
 6. Run `make validate` to confirm the formula passes structural checks.
 7. Open a pull request with only the new versioned formula file.
 
@@ -82,13 +82,14 @@ tokens instead of `__URL__` / `__SHA256__`:
 
 Each stable release formula must reference:
 
-- **SBOM** – a CycloneDX SBOM artifact (`sbom.cdx.json`) attached to the
-  GitHub Release.  Record the download URL and sha256 in the `resource "sbom"`
-  block of the formula.
-- **Provenance attestation** – a cosign-signed SLSA provenance attestation
-  (`attestation.json`) attached to the same release.  Verify it before
-  publishing the formula.  The attestation URL may be noted in a formula
-  comment for auditability.
+- **SBOM** – an SBOM artifact attached to the GitHub Release. For NLBoot, the
+  release workflow emits target-specific SPDX JSON artifacts named
+  `nlboot-client-<version>-<target>-sbom.spdx.json`. Record the download URL
+  and sha256 in the `resource "sbom"` block of the formula.
+- **Provenance attestation** – a GitHub build-provenance attestation attached
+  to the same release where GitHub supports it. Verify it before publishing
+  the formula. The attestation URL may be noted in a formula comment for
+  auditability.
 
 ## Formula tests
 
@@ -124,9 +125,15 @@ GitHub Release for `nlboot-client-v<VERSION>` includes **all** of the following:
       `nlboot-client-nlboot-client-v<VERSION>-x86_64-unknown-linux-gnu.tar.gz`
 - [ ] Linux aarch64 tarball:
       `nlboot-client-nlboot-client-v<VERSION>-aarch64-unknown-linux-gnu.tar.gz`
-- [ ] Checksum file: `SHA256SUMS` (must cover both tarballs)
-- [ ] SBOM file: `sbom.cdx.json` (CycloneDX format)
-- [ ] SBOM checksum: `sbom.cdx.json.sha256` or an entry in `SHA256SUMS`
+- [ ] Checksum file: `SHA256SUMS` (must cover both tarballs and SBOM files)
+- [ ] x86\_64 SPDX SBOM file:
+      `nlboot-client-nlboot-client-v<VERSION>-x86_64-unknown-linux-gnu-sbom.spdx.json`
+- [ ] x86\_64 SPDX SBOM checksum:
+      `nlboot-client-nlboot-client-v<VERSION>-x86_64-unknown-linux-gnu-sbom.spdx.json.sha256`
+- [ ] aarch64 SPDX SBOM file:
+      `nlboot-client-nlboot-client-v<VERSION>-aarch64-unknown-linux-gnu-sbom.spdx.json`
+- [ ] aarch64 SPDX SBOM checksum:
+      `nlboot-client-nlboot-client-v<VERSION>-aarch64-unknown-linux-gnu-sbom.spdx.json.sha256`
 
 Do not proceed until every item is present on the release page.
 
@@ -182,20 +189,23 @@ python3 tools/update_nlboot_client.py <VERSION> \
 
 ### Step 3 – Add the SBOM resource block
 
-The generated formula contains a commented-out `resource "sbom"` block.
+The generated formula contains a commented-out `resource "sbom"` block. Use the
+SBOM for the same target family that the formula installs. For the first Linux
+formula, prefer the x86\_64 SBOM unless the generated formula is target-specific.
+
 Obtain the SBOM SHA-256:
 
 ```bash
-curl -fsSL -o sbom.cdx.json \
-  "https://github.com/SociOS-Linux/nlboot/releases/download/nlboot-client-v<VERSION>/sbom.cdx.json"
-sha256sum sbom.cdx.json
+curl -fsSL -o nlboot-sbom.spdx.json \
+  "https://github.com/SociOS-Linux/nlboot/releases/download/nlboot-client-v<VERSION>/nlboot-client-nlboot-client-v<VERSION>-x86_64-unknown-linux-gnu-sbom.spdx.json"
+sha256sum nlboot-sbom.spdx.json
 ```
 
 Then uncomment and fill in the block inside the generated formula:
 
 ```ruby
 resource "sbom" do
-  url "https://github.com/SociOS-Linux/nlboot/releases/download/nlboot-client-v<VERSION>/sbom.cdx.json"
+  url "https://github.com/SociOS-Linux/nlboot/releases/download/nlboot-client-v<VERSION>/nlboot-client-nlboot-client-v<VERSION>-x86_64-unknown-linux-gnu-sbom.spdx.json"
   sha256 "<SBOM_SHA256>"
 end
 ```
