@@ -20,7 +20,7 @@ brew install holmes
 
 `prophet-cli` installs the `prophet` facade command.
 
-`sourceos-devtools` installs `sourceosctl`, including the non-mutating Local Model Door, Agent Machine, and Office Plane helper surfaces.
+`sourceos-devtools` installs `sourceosctl`, including the non-mutating Local Model Door, Network Door, Native Assistant Door, Agent Machine, and Office Plane helper surfaces.
 
 `agent-term` installs the Matrix-first SourceOS operator ChatOps console.
 
@@ -28,7 +28,7 @@ brew install holmes
 
 `holmes` installs the Holmes language intelligence CLI.
 
-## SourceOS Agent Machine, Office Plane, and Local Model Door path
+## SourceOS local operator path
 
 The Mac-first local operator path is:
 
@@ -38,12 +38,17 @@ brew install prophet-cli sourceos-devtools agent-term
 
 prophet sourceos local-model doctor
 prophet sourceos local-model plan --profile local-llama32-1b
+prophet sourceos network doctor
+prophet sourceos network plan --enterprise --mesh --allow-listed --destination models.enterprise.example
+prophet sourceos network provider --provider-class openai-compatible --owner user
+prophet sourceos native-assistant plan --operation open-workroom
+prophet sourceos native-assistant plan --operation create-office-artifact
 prophet sourceos agent-machine mounts plan
 prophet sourceos office doctor
 prophet sourceos agent-term office create-deck '!prophet-workspace' --workroom workroom-demo-0001 --title 'Demo Briefing Deck'
 ```
 
-The tap installs command-line tools only. It does **not** initialize Podman machines, create host mounts, write user profiles, start background daemons, grant access to local folders, download model weights, start local model services, or run model calls. Agent Machine mounts, Office generation/conversion, Local Model Door route planning, and AgentTerm side effects remain explicit dry-run, non-mutating, or policy-gated flows in the owning tools.
+The tap installs command-line tools only. It does **not** initialize Podman machines, create host mounts, write user profiles, start background daemons, grant access to local folders, download model weights, start local model services, run model calls, mutate firewall state, install mesh components, contact BYOM providers, or invoke native assistant APIs. Agent Machine mounts, Office generation/conversion, Local Model Door route planning, Network Door plans, Native Assistant Door plans, and AgentTerm side effects remain explicit dry-run, non-mutating, or policy-gated flows in the owning tools.
 
 ## Dev formulae vs stable release formulae
 
