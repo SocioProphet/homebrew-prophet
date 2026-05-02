@@ -15,6 +15,8 @@ class ProphetCli < Formula
   test do
     system "#{bin}/prophet", "--help"
     assert_match "required delegate not found", shell_output("#{bin}/prophet sourceos local-model doctor 2>&1", 127)
+    assert_match "required delegate not found", shell_output("#{bin}/prophet sourceos network doctor 2>&1", 127)
+    assert_match "required delegate not found", shell_output("#{bin}/prophet sourceos native-assistant plan --operation open-workroom 2>&1", 127)
     assert_match "required delegate not found", shell_output("#{bin}/prophet sourceos office doctor 2>&1", 127)
   end
 end
