@@ -16,6 +16,9 @@ class SourceosDevtools < Formula
 
   test do
     system "#{bin}/sourceosctl", "--help"
+    system "#{bin}/sourceosctl", "local-model", "doctor"
+    system "#{bin}/sourceosctl", "local-model", "profiles"
+    system "#{bin}/sourceosctl", "local-model", "plan", "--profile", "local-llama32-1b"
     system "#{bin}/sourceosctl", "agent-machine", "mounts", "plan"
     system "#{bin}/sourceosctl", "office", "doctor"
   end
