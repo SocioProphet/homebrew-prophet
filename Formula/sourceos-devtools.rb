@@ -19,6 +19,10 @@ class SourceosDevtools < Formula
     system "#{bin}/sourceosctl", "local-model", "doctor"
     system "#{bin}/sourceosctl", "local-model", "profiles"
     system "#{bin}/sourceosctl", "local-model", "plan", "--profile", "local-llama32-1b"
+    system "#{bin}/sourceosctl", "network", "doctor"
+    system "#{bin}/sourceosctl", "network", "plan", "--destination", "models.enterprise.example"
+    system "#{bin}/sourceosctl", "network", "provider", "--provider-class", "openai-compatible", "--owner", "user"
+    system "#{bin}/sourceosctl", "native-assistant", "plan", "--operation", "open-workroom"
     system "#{bin}/sourceosctl", "agent-machine", "mounts", "plan"
     system "#{bin}/sourceosctl", "office", "doctor"
   end
