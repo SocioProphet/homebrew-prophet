@@ -12,15 +12,36 @@ brew tap SocioProphet/prophet
 
 ```bash
 brew install prophet-cli
+brew install sourceos-devtools
+brew install agent-term
 brew install sourceos-ai
 brew install holmes
 ```
 
 `prophet-cli` installs the `prophet` facade command.
 
+`sourceos-devtools` installs `sourceosctl`, including the dry-run/read-only Agent Machine and Office Plane local helper surfaces.
+
+`agent-term` installs the Matrix-first SourceOS operator ChatOps console.
+
 `sourceos-ai` installs the SourceOS local AI carry client.
 
 `holmes` installs the Holmes language intelligence CLI.
+
+## SourceOS Agent Machine and Office Plane path
+
+The Mac-first local operator path is:
+
+```bash
+brew tap SocioProphet/prophet
+brew install prophet-cli sourceos-devtools agent-term
+
+prophet sourceos agent-machine mounts plan
+prophet sourceos office doctor
+prophet sourceos agent-term office create-deck '!prophet-workspace' --workroom workroom-demo-0001 --title 'Demo Briefing Deck'
+```
+
+The tap installs command-line tools only. It does **not** initialize Podman machines, create host mounts, write user profiles, start background daemons, or grant access to local folders. Agent Machine mounts, Office generation/conversion, and AgentTerm side effects remain explicit dry-run or policy-gated flows in the owning tools.
 
 ## Dev formulae vs stable release formulae
 
@@ -35,6 +56,8 @@ suffix and do **not** pin a sha256 checksum (the source is a live git branch).
 | Formula | Binary | Status |
 |---|---|---|
 | `prophet-cli.rb` | `prophet` | active |
+| `sourceos-devtools.rb` | `sourceosctl` | active |
+| `agent-term.rb` | `agent-term` | active |
 | `sourceos-ai.rb` | `sourceos-ai` | active |
 | `holmes.rb` | `holmes` | active |
 | `model-router.rb` | `model-router` | active |
@@ -74,7 +97,6 @@ a PR automatically.
 
 ## Pending formulae
 
-- `sourceos-devtools`
 - `sourceos-installer`
 - `nlplab`
 - `embeddinglab`
